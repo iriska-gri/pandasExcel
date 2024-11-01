@@ -24,7 +24,7 @@ class Connect():
                          
         query = f"CREATE TABLE IF NOT EXISTS {name} ({self.dictparser(mass)})" 
         self.cur.execute(query)
-        self.conn.commit()
+        self.conn.commit() 
         # print(query)
       
     def dictparser(self, mass):
@@ -34,11 +34,10 @@ class Connect():
         
         return ", ".join(lists)
             
-     
 
     def diconect(self):
         self.conn.close()
-        print('Разъеденен')
+        print('Разъеденение')
 
 
 
