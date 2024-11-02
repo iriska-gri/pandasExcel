@@ -139,7 +139,7 @@ class UploadCSV():
         df['Артикул МГБ'] = df['Артикул МГБ'].astype('string')
 
 
-        df.to_excel('данные.xlsx', index=False)
+        # df.to_excel('данные.xlsx', index=False)
         # print(df)
 
     def  wsiterator(self, sheet, settingws):
@@ -190,16 +190,59 @@ class UploadCSV():
 
             credentials = ServiceAccountCredentials.from_json_keyfile_name("gs_credentials.json", scope)
             client = gspread.authorize(credentials)
+
+
             # Создание книги
             # sheet = client.create("FirstSheet")
             # sheet.share('iriska190391@gmail.com', perm_type='user', role='writer')
-            test = client.open('FirstSheet').sheet1
-            df = pd.read_csv('a.csv')
+            try:
+
+                test = client.open('Тестовое задание для ТС')
+                sheet_reports =test.get_worksheet(2)
+                reports = pd.DataFrame(sheet_reports.get_all_records(), columns=['user_id', 'geo_object_id', 'report_state'])
+                j =  reports.groupby(['user_id', 'geo_object_id'])['report_state'].count().to_frame(name='count')
+                
+                l = reports.loc[reports['report_state'] == 'accepted']
+                
+                # .loc[lambda x : x == 'accepted']
+                lamd = l.groupby(['user_id', 'geo_object_id'])['report_state'].count().to_frame(name='accepted')
+                j = j.merge(lamd, left_on=['user_id', 'geo_object_id'], right_on=['user_id', 'geo_object_id'])
+               
+                unicreports = reports[['user_id', 'geo_object_id']].drop_duplicates()
+                # j['total'] = j['report_state']
+                # j = j.drop('report_state')
+                # .drop_duplicates()
+              
+                unicreports = unicreports.merge(j, left_on=['user_id', 'geo_object_id'], right_on=['user_id', 'geo_object_id'])
+                # unicreports = unicreports.merge(j, left_on=['user_id', 'geo_object_id'], right_on=['user_id', 'geo_object_id'])
+                sheet_reports =test.get_worksheet(4)
+                print(unicreports)
+                users = pd.DataFrame(sheet_reports.get_all_records(), columns=['id', 'first_name', 'last_name'])
+                # users['new'] = True
+               
+                
+                
+                
+                merged_df = unicreports.merge(users, left_on="user_id", right_on="id")
+                merged_df['name'] = merged_df['first_name'].map(str) + ' ' + merged_df['last_name'].map(str) 
+                merged_df= merged_df.drop(columns=['first_name', 'last_name', 'id'])
+                merged_df = merged_df.sort_values(by='user_id')
+
+                # j.to_excel('данные.xlsx', index=False)
+               
+              
+            # Загрузка данных с эксель файла 
+                # df = pd.read_excel('данные.xlsx')
+            # df = df.fillna('')
+
             # Получить названия всех колонок
-            # col = df.values.tolist()
-            test.update([df.columns.values.tolist()] + df.values.tolist())
+
+            # test.update([df.columns.values.tolist()] + df.values.tolist())
             # df = pd.read_excel('A1.xlsx', header=2, usecols="A ,B" )
-            print(df)
+                # print(reports['user_id'])
+                # print(users)
+            except gspread.exceptions.SpreadsheetNotFound as err:
+                print(err, 'Ошибка')
 # 
 # Используется для первого задания для создания таблиц, импорт данных произведен внутри постресс
     def oneTable(self):
