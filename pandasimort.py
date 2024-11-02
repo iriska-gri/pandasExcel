@@ -183,6 +183,8 @@ class UploadCSV():
         # print(re)
   
         return re
+    
+    
 
     def uploadexcel(self):
             scope = ['https://www.googleapis.com/auth/spreadsheets',
@@ -203,31 +205,31 @@ class UploadCSV():
                 j =  reports.groupby(['user_id', 'geo_object_id'])['report_state'].count().to_frame(name='count')
                 
                 l = reports.loc[reports['report_state'] == 'accepted']
-                
-                # .loc[lambda x : x == 'accepted']
+
                 lamd = l.groupby(['user_id', 'geo_object_id'])['report_state'].count().to_frame(name='accepted')
                 j = j.merge(lamd, left_on=['user_id', 'geo_object_id'], right_on=['user_id', 'geo_object_id'])
                
                 unicreports = reports[['user_id', 'geo_object_id']].drop_duplicates()
-                # j['total'] = j['report_state']
-                # j = j.drop('report_state')
-                # .drop_duplicates()
+
               
                 unicreports = unicreports.merge(j, left_on=['user_id', 'geo_object_id'], right_on=['user_id', 'geo_object_id'])
                 # unicreports = unicreports.merge(j, left_on=['user_id', 'geo_object_id'], right_on=['user_id', 'geo_object_id'])
+                
                 sheet_reports =test.get_worksheet(4)
-                print(unicreports)
                 users = pd.DataFrame(sheet_reports.get_all_records(), columns=['id', 'first_name', 'last_name'])
                 # users['new'] = True
-               
-                
-                
-                
+                sheet_reports =test.get_worksheet(3)
+                geo_object = pd.DataFrame(sheet_reports.get_all_records(), columns=['geo_object_id', 'title', 'city'])
+                unicreports = unicreports.merge(geo_object, left_on="geo_object_id", right_on="geo_object_id")
+
                 merged_df = unicreports.merge(users, left_on="user_id", right_on="id")
+                #   merged_df = unicreports.merge(users, left_on="user_id", right_on="id")
                 merged_df['name'] = merged_df['first_name'].map(str) + ' ' + merged_df['last_name'].map(str) 
                 merged_df= merged_df.drop(columns=['first_name', 'last_name', 'id'])
                 merged_df = merged_df.sort_values(by='user_id')
+                merged_df = merged_df[['user_id', 'name', 'geo_object_id', 'title', 'city', 'accepted', 'count']]
 
+                print(merged_df)
                 # j.to_excel('данные.xlsx', index=False)
                
               
