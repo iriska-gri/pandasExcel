@@ -2,11 +2,13 @@ import numpy as np
 import pandas as pd
 import psycopg2 # Соединение с постгресс
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 from openpyxl import load_workbook
 # from oauth2client.service_account import ServiceAccountCredentials
 
 class Connect():
+
 
     def __init__(self):
         try:
@@ -14,6 +16,10 @@ class Connect():
             # Создаем подключение к бд
             self.cur = self.conn.cursor()
             print('Соединен')
+
+                        # Подсоединение к Google Таблицам
+
+            
 
         except:
             # в случае сбоя подключения будет выведено сообщение в STDOUT
@@ -178,6 +184,23 @@ class UploadCSV():
   
         return re
 
+    def uploadexcel(self):
+            scope = ['https://www.googleapis.com/auth/spreadsheets',
+            "https://www.googleapis.com/auth/drive"]
+
+            credentials = ServiceAccountCredentials.from_json_keyfile_name("gs_credentials.json", scope)
+            client = gspread.authorize(credentials)
+            # Создание книги
+            # sheet = client.create("FirstSheet")
+            # sheet.share('iriska190391@gmail.com', perm_type='user', role='writer')
+            test = client.open('FirstSheet').sheet1
+            df = pd.read_csv('a.csv')
+            # Получить названия всех колонок
+            # col = df.values.tolist()
+            test.update([df.columns.values.tolist()] + df.values.tolist())
+            # df = pd.read_excel('A1.xlsx', header=2, usecols="A ,B" )
+            print(df)
+# 
 # Используется для первого задания для создания таблиц, импорт данных произведен внутри постресс
     def oneTable(self):
         mass = {
