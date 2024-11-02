@@ -168,7 +168,7 @@ class UploadCSV():
 
         # перебирем словарь для заполнения данных
         for [key, val] in newcolumn.items():
-           
+            
             if key == "empty" :
                 for x in val:
                         re[x] = ''
