@@ -183,8 +183,9 @@ class UploadCSV():
         # print(re)
   
         return re
-    
-    
+
+          
+
 
     def uploadexcel(self):
             scope = ['https://www.googleapis.com/auth/spreadsheets',
@@ -192,13 +193,12 @@ class UploadCSV():
 
             credentials = ServiceAccountCredentials.from_json_keyfile_name("gs_credentials.json", scope)
             client = gspread.authorize(credentials)
-
-
+          
             # Создание книги
             # sheet = client.create("FirstSheet")
             # sheet.share('iriska190391@gmail.com', perm_type='user', role='writer')
             try:
-
+                
                 test = client.open('Тестовое задание для ТС')
                 sheet_reports =test.get_worksheet(2)
                 reports = pd.DataFrame(sheet_reports.get_all_records(), columns=['user_id', 'geo_object_id', 'report_state'])
@@ -228,8 +228,10 @@ class UploadCSV():
                 merged_df= merged_df.drop(columns=['first_name', 'last_name', 'id'])
                 merged_df = merged_df.sort_values(by='user_id')
                 merged_df = merged_df[['user_id', 'name', 'geo_object_id', 'title', 'city', 'accepted', 'count']]
-
-                print(merged_df)
+                print('Расчпечатано')
+                # a = merged_df['count']
+                # print(a)
+               
                 # j.to_excel('данные.xlsx', index=False)
                
               
