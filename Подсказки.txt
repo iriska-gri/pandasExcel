@@ -1,3 +1,6 @@
+pyuic5 design.ui -o design.py
+
+
 filtered_data = merged_df[merged_df["user_id"]==224] // Найти строки
 a = merged_df.loc[merged_df["user_id"]==224, ['count']] //вывести столбцы с фильтром по строке 
 merged_df.loc[merged_df["user_id"].isin([224, 484695]), ['user_id', 'count']] // Несколько условий для фильтра
