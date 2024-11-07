@@ -13,18 +13,16 @@ class Connect():
 
     def __init__(self):
         try:
-            self.conn = psycopg2.connect(dbname='Pandas', user='postgres', password='admin', host='127.0.0.1')
+            self.conn = psycopg2.connect(dbname='pandas', user='postgres', password='admin', host='127.0.0.1')
             # Создаем подключение к бд
             self.cur = self.conn.cursor()
-            print('Соединен')
-
-                        # Подсоединение к Google Таблицам
-
-            
+            print('Соединен с БД')
+          
 
         except:
             # в случае сбоя подключения будет выведено сообщение в STDOUT
             print('Can`t establish connection to database')
+    
 
     # создать таблицу 
     def nameTable(self,name, mass):
@@ -50,8 +48,6 @@ class Connect():
 
 class UploadCSV():
 
-    
-
     def __init__(self, message='привет') -> None:
         self.message=message
         self.connection = Connect()
@@ -61,6 +57,9 @@ class UploadCSV():
     def newdate(self, row):
         text = f"Сплошной сбор по категориям ({datetime.datetime.strftime(row['старт'],'%d.%m')}-{datetime.datetime.strftime(row['финиш'],'%d.%m')}) "
         return text
+
+    def pro(self):
+        print('Проверка')   
 
     def crossjoin(self):
        
@@ -241,7 +240,7 @@ class UploadCSV():
                 # print(users)
             except gspread.exceptions.SpreadsheetNotFound as err:
                 print(err, 'Ошибка')
-# 
+# # 
 # Используется для первого задания для создания таблиц, импорт данных произведен внутри постресс
     def oneTable(self):
         mass = {
@@ -285,7 +284,7 @@ class UploadCSV():
                 }
 
         for [key, val] in mass.items():
-            self.connection.createTable(key, val)
+            self.connection.nameTable(key, val)
 
         pass
 

@@ -6,12 +6,17 @@ from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 from openpyxl import load_workbook
 from connectGoogle import ConnectGoogle
-
+from pandasimort import Connect
 
 
 class WorkTest():
     def __init__(self):
         self.client = ConnectGoogle().connect()
+        self.connection = Connect()
+
+    def uploadinpg(self):
+        # self.opengexcel(7, settings)
+        print('проверка')
 
     def settingssheet(self):
         file = {
@@ -29,13 +34,14 @@ class WorkTest():
                         'Примечания для мониторинга':'Описание'
                     },
                 },
-                'sheet' : [7, 8]
+                'sheet' : [7]
         }
 
         
         df = pd.DataFrame()
         for val in file['sheet']:
             df = pd.concat([df, self.opengexcel(val, file['settings'])])
+      
             # print(val)
             # for val in key['sheet']:
         
@@ -43,6 +49,7 @@ class WorkTest():
         #     # df =  self.opengexcel(file, settings)
          
         #     df= pd.concat([df, self.opengexcel(file, settings)])
+        self.connection
         print(df)
 
         
@@ -59,6 +66,7 @@ class WorkTest():
         df1 = newreports.rename(columns=newreports.iloc[0])
         df1.drop(2 ,axis=0, inplace= True)
         df1.rename(columns= settings['renames'], inplace=True)
+       
         # print(df1)
         # df1 = df1[[]]
         # # # print(newreports)

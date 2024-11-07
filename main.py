@@ -8,7 +8,7 @@ if __name__ == '__main__':
    # h = UploadCSV(sys.argv[2])
    h = UploadCSV()
    t= WorkTest()
-   p = MainWindow()
+   # p = MainWindow()
 
    # getattr(p)()
    # h.printer()
