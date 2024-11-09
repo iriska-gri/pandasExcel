@@ -18,6 +18,10 @@ class WorkTest():
         # self.opengexcel(7, settings)
         print('проверка')
 
+    def pro(self):
+        df = self.settingssheet()
+        self.connection.insertInto(df)
+
     def settingssheet(self):
         file = {
                 'settings': {
@@ -41,6 +45,8 @@ class WorkTest():
         df = pd.DataFrame()
         for val in file['sheet']:
             df = pd.concat([df, self.opengexcel(val, file['settings'])])
+        
+        return df
       
             # print(val)
             # for val in key['sheet']:
@@ -49,8 +55,8 @@ class WorkTest():
         #     # df =  self.opengexcel(file, settings)
          
         #     df= pd.concat([df, self.opengexcel(file, settings)])
-        self.connection
-        print(df)
+        
+        # print(df)
 
         
 

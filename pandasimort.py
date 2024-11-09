@@ -1,11 +1,16 @@
 import numpy as np
 import pandas as pd
 import psycopg2 # Соединение с постгресс
+import psycopg2.extras as extras 
+from sqlalchemy import create_engine
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 from openpyxl import load_workbook
 from connectGoogle import ConnectGoogle
+from sqlalchemy import create_engine 
+import csv
+import io
 # from oauth2client.service_account import ServiceAccountCredentials
 
 class Connect():
@@ -31,7 +36,47 @@ class Connect():
         self.cur.execute(query)
         self.conn.commit() 
         # print(query)
+
+    def selectTable(self):
+        df = pd.read_sql_query('select * from "test"',con=self.conn)
       
+        print(df)
+        # query= "SELECT * FROM test"
+       
+        # # query = f"INSERT INTO test (names, age) VALUES ('Jon', '8')"
+        # self.cur.execute(query)
+        # self.conn.commit() 
+        # print(self.conn)
+  
+    # def insertTable(self):
+    #     query = "INSERT INTO questionnaire1 (groups, category, subcategory, epp, ctm, cargo_code, sub_cargo_code, schrih_code, product_name, need, monitoring_note, regular_price, promotional_price, name_promotion) VALUES ('СОФ', 'P0', '15.Овощи', '1501', '150101', '1', '0', '150101162743', '162743', '2099999731574, 2462743000000', 'Огурцы среднеплодные гладкие вес ()', 'X', 'EPP_KVI, средние гладкие, цена за кг', 'd')"
+    #     self.cur.execute(query)
+    #     self.conn.commit() 
+#         headers = ['groups', 'category', 'subcategory', 'epp', 'ctm', 'cargo_code', 'sub_cargo_code', 'schrih_code', 
+	# 'product_name', 'need', 'monitoring_note', 'regular_price', 'promotional_price', 'name_promotion']
+    def insertInto(self, df):
+        # query= "SELECT * FROM test"
+        
+        query = "SELECT column_name FROM information_schema.columns WHERE table_name = 'anketa' ORDER BY ordinal_position ASC"
+        g = pd.read_sql(query, self.conn)
+        self.cur.execute(query)
+        self.conn.commit() 
+        postcolmn = g['column_name'].to_list()
+        postcolmn.remove('id')
+        res = {list(df)[i]: postcolmn[i] for i in range(len(list(df)))}
+
+       
+        df = df.rename(columns=res)
+    
+        engine = create_engine('postgresql://postgres:admin@localhost:5432/pandas')
+        df.to_sql(
+            name="anketa", # имя таблицы
+            con=engine,  # движок
+            if_exists="append", # если таблица уже существует, добавляем
+            index=False # без индекса
+        )
+       
+
     def dictparser(self, mass):
         lists = []
         for [key, val] in mass.items(): 
@@ -59,7 +104,24 @@ class UploadCSV():
         return text
 
     def pro(self):
-        print('Проверка')   
+        self.connection.insertInto()
+            # data = {'name': ['Tom', 'dick', 'harry'], 
+            #         'age': [22, 21, 24]} 
+            
+            # # Create DataFrame 
+            # df = pd.DataFrame(data) 
+            # tuples = [tuple(x) for x in df.to_numpy()] 
+            # cols = ','.join(list(df.columns)) 
+            # query = "INSERT INTO %s(%s) VALUES %%s" % ('test', cols) 
+            # self.cur.execute(query)
+            # self.conn.commit() 
+            # print(cols)
+           
+       
+  
+# conn.commit() 
+   
+       
 
     def crossjoin(self):
        
@@ -244,43 +306,63 @@ class UploadCSV():
 # Используется для первого задания для создания таблиц, импорт данных произведен внутри постресс
     def oneTable(self):
         mass = {
-            'questionnaire1':
+              'anketa':
             { 
                     'id': 'SERIAL PRIMARY KEY',
-                    'groups': 'VARCHAR(255) NOT NULL',
-                    'category': 'INTEGER NOT NULL',
-                    'subcategory': 'INTEGER NOT NULL',
-                    'epp': 'INTEGER NOT NULL',
-                    'ctm': 'INTEGER NULL',
-                    'cargo_code': 'INTEGER NOT NULL',
-                    'sub_cargo_code': 'INTEGER NOT NULL',
-                    'schrih_code': 'INTEGER NOT NULL',
-                    'product_name': 'VARCHAR(255) NOT NULL',
-                    'need': 'BOOLEAN NOT NULL',
-                    'monitoring_note': 'VARCHAR(255) NOT NULL',
-                    'regular_price': 'FLOAT NOT NULL',
-                    'promotional_price': 'FLOAT NOT NULL',
-                    'name_promotion': 'VARCHAR(255) NOT NULL'
-                },
-                'questionnaire2':
-                {
-                    'id': 'SERIAL PRIMARY KEY',
-                    'subtype': ' VARCHAR(255) NOT NULL',
-                    'gs': ' VARCHAR(255) NOT NULL',
-                    'groups': ' VARCHAR(255) NOT NULL',
-                    'category': ' INTEGER NOT NULL',
-                    'subcategory': ' INTEGER NOT NULL',
-                    'epp': ' INTEGER NOT NULL',
-                    'ctm': 'INTEGER NULL',
-                    'cargo_code': 'INTEGER NOT NULL',
-                    'sub_cargo_code': 'INTEGER NOT NULL',
-                    'schrih_code': 'INTEGER NOT NULL',
-                    'product_name': 'VARCHAR(255) NOT NULL',
-                    'need': 'BOOLEAN NOT NULL',
-                    'monitoring_note': 'VARCHAR(255) NOT NULL',
-                    'regular_price': 'FLOAT NOT NULL',
-                    'promotional_price': 'FLOAT NOT NULL'
+                    'subtype': ' VARCHAR(255) NULL',
+                    'gs': ' VARCHAR(255) NULL',
+                    'groups': ' VARCHAR(255) NULL',
+                    'category': ' VARCHAR(255) NULL',
+                    'subcategory': ' VARCHAR(255) NULL',
+                    'epp': ' VARCHAR(255) NULL',
+                    'ctm': 'VARCHAR(255) NULL',
+                    'mgb': 'VARCHAR(255) NULL',
+                    'metro': 'VARCHAR(255) NULL',
+                    'schrih_code': 'VARCHAR(255) NULL',
+                    'product_name': 'VARCHAR(255) NULL',
+                    'need': 'VARCHAR(255) NULL',
+                    'description': 'VARCHAR(255) NULL',
+                    'regular_price': 'VARCHAR(255) NULL',
+                    'promotional_price': 'VARCHAR(255) NULL',
+                    'note': 'VARCHAR(255) NULL'
                 }
+            # 'questionnaire1':
+            # { 
+            #         'id': 'SERIAL PRIMARY KEY',
+            #         'groups': 'VARCHAR(255) NOT NULL',
+            #         'category': 'INTEGER NOT NULL',
+            #         'subcategory': 'INTEGER NOT NULL',
+            #         'epp': 'INTEGER NOT NULL',
+            #         'ctm': 'INTEGER NULL',
+            #         'cargo_code': 'INTEGER NOT NULL',
+            #         'sub_cargo_code': 'INTEGER NOT NULL',
+            #         'schrih_code': 'INTEGER NOT NULL',
+            #         'product_name': 'VARCHAR(255) NOT NULL',
+            #         'need': 'BOOLEAN NOT NULL',
+            #         'monitoring_note': 'VARCHAR(255) NOT NULL',
+            #         'regular_price': 'FLOAT NOT NULL',
+            #         'promotional_price': 'FLOAT NOT NULL',
+            #         'name_promotion': 'VARCHAR(255) NOT NULL'
+            #     },
+            #     'questionnaire2':
+            #     {
+            #         'id': 'SERIAL PRIMARY KEY',
+            #         'subtype': ' VARCHAR(255) NOT NULL',
+            #         'gs': ' VARCHAR(255) NOT NULL',
+            #         'groups': ' VARCHAR(255) NOT NULL',
+            #         'category': ' INTEGER NOT NULL',
+            #         'subcategory': ' INTEGER NOT NULL',
+            #         'epp': ' INTEGER NOT NULL',
+            #         'ctm': 'INTEGER NULL',
+            #         'cargo_code': 'INTEGER NOT NULL',
+            #         'sub_cargo_code': 'INTEGER NOT NULL',
+            #         'schrih_code': 'INTEGER NOT NULL',
+            #         'product_name': 'VARCHAR(255) NOT NULL',
+            #         'need': 'BOOLEAN NOT NULL',
+            #         'monitoring_note': 'VARCHAR(255) NOT NULL',
+            #         'regular_price': 'FLOAT NOT NULL',
+            #         'promotional_price': 'FLOAT NOT NULL'
+            #     }
                 }
 
         for [key, val] in mass.items():
