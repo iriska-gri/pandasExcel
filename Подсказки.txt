@@ -28,3 +28,18 @@ value = 'sad')  # название столбца
 reports[['code', 'Подтип мониторинга']] // вывод по названию столбцов
 
 print(df.columns) // название колонок
+
+
+
+ SELECT users.id,
+    (users.first_name::text || ' '::text) || users.last_name::text AS fio,
+    geo_objects.geo_object_id,
+    geo_objects.title,
+    geo_objects.city,
+    count(reports.report_state) FILTER (WHERE reports.report_state::text = 'accepted'::text) AS accepted,
+    count(reports.report_state) AS count
+   FROM reports
+     LEFT JOIN users ON users.id = reports.user_id
+     LEFT JOIN geo_objects ON geo_objects.geo_object_id = reports.geo_object_id
+  GROUP BY ((users.first_name::text || ' '::text) || users.last_name::text), users.id, geo_objects.geo_object_id, geo_objects.title, geo_objects.city
+  ORDER BY users.id;
