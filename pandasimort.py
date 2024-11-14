@@ -18,7 +18,7 @@ class Connect():
 
     def __init__(self):
         try:
-            self.conn = psycopg2.connect(dbname='pandas', user='postgres', password='admin', host='127.0.0.1')
+            self.conn = psycopg2.connect(dbname='Pandas', user='postgres', password='admin', host='127.0.0.1')
             # Создаем подключение к бд
             self.cur = self.conn.cursor()
             print('Соединен с БД')
@@ -38,26 +38,16 @@ class Connect():
         # print(query)
 
     def selectTable(self):
-        df = pd.read_sql_query('select * from "test"',con=self.conn)
-      
-        print(df)
+        df1 = pd.read_sql_query('select cargo_code from "anketa1"',con=self.conn)
+        df2 = pd.read_sql_query('select cargo_code from "anketa2"',con=self.conn)
+        return [df1, df2]
+    
+   
+    def insertInto(self, df, tablename):
         # query= "SELECT * FROM test"
+        table = tablename
+        query = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}' ORDER BY ordinal_position ASC"
        
-        # # query = f"INSERT INTO test (names, age) VALUES ('Jon', '8')"
-        # self.cur.execute(query)
-        # self.conn.commit() 
-        # print(self.conn)
-  
-    # def insertTable(self):
-    #     query = "INSERT INTO questionnaire1 (groups, category, subcategory, epp, ctm, cargo_code, sub_cargo_code, schrih_code, product_name, need, monitoring_note, regular_price, promotional_price, name_promotion) VALUES ('СОФ', 'P0', '15.Овощи', '1501', '150101', '1', '0', '150101162743', '162743', '2099999731574, 2462743000000', 'Огурцы среднеплодные гладкие вес ()', 'X', 'EPP_KVI, средние гладкие, цена за кг', 'd')"
-    #     self.cur.execute(query)
-    #     self.conn.commit() 
-#         headers = ['groups', 'category', 'subcategory', 'epp', 'ctm', 'cargo_code', 'sub_cargo_code', 'schrih_code', 
-	# 'product_name', 'need', 'monitoring_note', 'regular_price', 'promotional_price', 'name_promotion']
-    def insertInto(self, df):
-        # query= "SELECT * FROM test"
-        
-        query = "SELECT column_name FROM information_schema.columns WHERE table_name = 'anketa' ORDER BY ordinal_position ASC"
         g = pd.read_sql(query, self.conn)
         self.cur.execute(query)
         self.conn.commit() 
@@ -68,9 +58,9 @@ class Connect():
        
         df = df.rename(columns=res)
     
-        engine = create_engine('postgresql://postgres:admin@localhost:5432/pandas')
+        engine = create_engine('postgresql://postgres:admin@localhost:5432/Pandas')
         df.to_sql(
-            name="anketa", # имя таблицы
+            name=table, # имя таблицы
             con=engine,  # движок
             if_exists="append", # если таблица уже существует, добавляем
             index=False # без индекса
@@ -104,18 +94,10 @@ class UploadCSV():
         return text
 
     def pro(self):
-        self.connection.insertInto()
-            # data = {'name': ['Tom', 'dick', 'harry'], 
-            #         'age': [22, 21, 24]} 
-            
-            # # Create DataFrame 
-            # df = pd.DataFrame(data) 
-            # tuples = [tuple(x) for x in df.to_numpy()] 
-            # cols = ','.join(list(df.columns)) 
-            # query = "INSERT INTO %s(%s) VALUES %%s" % ('test', cols) 
-            # self.cur.execute(query)
-            # self.conn.commit() 
-            # print(cols)
+        h = self.connection.selectTable()
+        df = h[0].concat(h[1])
+        print(h[0])
+
            
        
   
@@ -258,10 +240,10 @@ class UploadCSV():
                 j =  reports.groupby(['user_id', 'geo_object_id'])['report_state'].count().to_frame(name='count')
                 
                 l = reports.loc[reports['report_state'] == 'accepted']
-
+                
                 lamd = l.groupby(['user_id', 'geo_object_id'])['report_state'].count().to_frame(name='accepted')
                 j = j.merge(lamd, left_on=['user_id', 'geo_object_id'], right_on=['user_id', 'geo_object_id'])
-               
+                print(j)
                 unicreports = reports[['user_id', 'geo_object_id']].drop_duplicates()
 
               
@@ -284,8 +266,8 @@ class UploadCSV():
                 
                 a = merged_df
                 # filtered_data = merged_df[merged_df["user_id"]==224]
-                a = merged_df.loc[merged_df["user_id"].isin([224, 484695]), ['user_id', 'count']]
-                print(a)
+                # a = merged_df.loc[merged_df["user_id"].isin([224, 484695]), ['user_id', 'count']]
+                
                 print('Расчпечатано')
                 # j.to_excel('данные.xlsx', index=False)
                
@@ -306,63 +288,52 @@ class UploadCSV():
 # Используется для первого задания для создания таблиц, импорт данных произведен внутри постресс
     def oneTable(self):
         mass = {
-              'anketa':
-            { 
-                    'id': 'SERIAL PRIMARY KEY',
-                    'subtype': ' VARCHAR(255) NULL',
-                    'gs': ' VARCHAR(255) NULL',
-                    'groups': ' VARCHAR(255) NULL',
-                    'category': ' VARCHAR(255) NULL',
-                    'subcategory': ' VARCHAR(255) NULL',
-                    'epp': ' VARCHAR(255) NULL',
-                    'ctm': 'VARCHAR(255) NULL',
-                    'mgb': 'VARCHAR(255) NULL',
-                    'metro': 'VARCHAR(255) NULL',
-                    'schrih_code': 'VARCHAR(255) NULL',
-                    'product_name': 'VARCHAR(255) NULL',
-                    'need': 'VARCHAR(255) NULL',
-                    'description': 'VARCHAR(255) NULL',
-                    'regular_price': 'VARCHAR(255) NULL',
-                    'promotional_price': 'VARCHAR(255) NULL',
-                    'note': 'VARCHAR(255) NULL'
+            'table_id':
+                {
+                    'id': 'INTEGER',
+                    'competitor':  'VARCHAR(255) NOT NULL',
+                    'datereport': ' DATE NOT NULL'
                 }
-            # 'questionnaire1':
+            #   'anketa1':
             # { 
             #         'id': 'SERIAL PRIMARY KEY',
-            #         'groups': 'VARCHAR(255) NOT NULL',
-            #         'category': 'INTEGER NOT NULL',
-            #         'subcategory': 'INTEGER NOT NULL',
-            #         'epp': 'INTEGER NOT NULL',
-            #         'ctm': 'INTEGER NULL',
-            #         'cargo_code': 'INTEGER NOT NULL',
-            #         'sub_cargo_code': 'INTEGER NOT NULL',
-            #         'schrih_code': 'INTEGER NOT NULL',
-            #         'product_name': 'VARCHAR(255) NOT NULL',
-            #         'need': 'BOOLEAN NOT NULL',
-            #         'monitoring_note': 'VARCHAR(255) NOT NULL',
-            #         'regular_price': 'FLOAT NOT NULL',
-            #         'promotional_price': 'FLOAT NOT NULL',
-            #         'name_promotion': 'VARCHAR(255) NOT NULL'
+            #         'subtype': ' VARCHAR(255) NULL',
+            #         'gs': ' VARCHAR(255) NULL',
+            #         'groups': ' VARCHAR(255) NULL',
+            #         'category': ' VARCHAR(255) NULL',
+            #         'subcategory': ' VARCHAR(255) NULL',
+            #         'epp': ' VARCHAR(255) NULL',
+            #         'ctm': 'VARCHAR(255) NULL',
+            #         'cargo_code': 'VARCHAR(255) NULL',
+            #         'sap': 'VARCHAR(255) NULL',
+            #         'schrih_code': 'VARCHAR(255) NULL',
+            #         'product_name': 'VARCHAR(255) NULL',
+            #         'need': 'VARCHAR(255) NULL',
+            #         'description': 'VARCHAR(255) NULL',
+            #         'regular_price': 'VARCHAR(255) NULL',
+            #         'promotional_price': 'VARCHAR(255) NULL',
+            #         'note': 'VARCHAR(255) NULL'
             #     },
-            #     'questionnaire2':
-            #     {
+            #   'anketa2':
+            # { 
             #         'id': 'SERIAL PRIMARY KEY',
-            #         'subtype': ' VARCHAR(255) NOT NULL',
-            #         'gs': ' VARCHAR(255) NOT NULL',
-            #         'groups': ' VARCHAR(255) NOT NULL',
-            #         'category': ' INTEGER NOT NULL',
-            #         'subcategory': ' INTEGER NOT NULL',
-            #         'epp': ' INTEGER NOT NULL',
-            #         'ctm': 'INTEGER NULL',
-            #         'cargo_code': 'INTEGER NOT NULL',
-            #         'sub_cargo_code': 'INTEGER NOT NULL',
-            #         'schrih_code': 'INTEGER NOT NULL',
-            #         'product_name': 'VARCHAR(255) NOT NULL',
-            #         'need': 'BOOLEAN NOT NULL',
-            #         'monitoring_note': 'VARCHAR(255) NOT NULL',
-            #         'regular_price': 'FLOAT NOT NULL',
-            #         'promotional_price': 'FLOAT NOT NULL'
+            #         'subtype': ' VARCHAR(255) NULL',
+            #         'gs': ' VARCHAR(255) NULL',
+            #         'groups': ' VARCHAR(255) NULL',
+            #         'category': ' VARCHAR(255) NULL',
+            #         'subcategory': ' VARCHAR(255) NULL',
+            #         'epp': ' VARCHAR(255) NULL',
+            #         'ctm': 'VARCHAR(255) NULL',
+            #         'cargo_code': 'VARCHAR(255) NULL',
+            #         'sap': 'VARCHAR(255) NULL',
+            #         'schrih_code': 'VARCHAR(255) NULL',
+            #         'product_name': 'VARCHAR(255) NULL',
+            #         'need': 'VARCHAR(255) NULL',
+            #         'description': 'VARCHAR(255) NULL',
+            #         'regular_price': 'VARCHAR(255) NULL',
+            #         'promotional_price': 'VARCHAR(255) NULL'
             #     }
+          
                 }
 
         for [key, val] in mass.items():

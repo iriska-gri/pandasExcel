@@ -43,3 +43,46 @@ print(df.columns) // название колонок
      LEFT JOIN geo_objects ON geo_objects.geo_object_id = reports.geo_object_id
   GROUP BY ((users.first_name::text || ' '::text) || users.last_name::text), users.id, geo_objects.geo_object_id, geo_objects.title, geo_objects.city
   ORDER BY users.id;
+
+
+   SELECT concat(date((t1.time_fixation AT TIME ZONE 'Europe/Moscow'::text)), '-', t2.department_id) AS id,
+    date((t1.time_fixation AT TIME ZONE 'Europe/Moscow'::text)) AS date_fixation,
+    t1.call_type_id,
+    t3.depdirection_id,
+    t2.department_id,
+    t3.tno_id,
+    t5.ufns_id,
+    t6.district_id,
+        CASE
+            WHEN EXTRACT(hour FROM (t1.time_fixation AT TIME ZONE 'Europe/Moscow'::text)) >= 9::numeric AND EXTRACT(hour FROM (t1.time_fixation AT TIME ZONE 'Europe/Moscow'::text)) < 18::numeric THEN true
+            ELSE false
+        END AS wt,
+        CASE
+            WHEN (lower(t1.outcaller_fullname::text) ~~ ANY (ARRAY['%екц%'::text, '%единый %'::text])) AND (lower(t1.outcaller_fullname::text) !~~ ANY (ARRAY['%инспекци%'::text])) THEN true
+            ELSE false
+        END AS from_ekc,
+    count(t1.id) AS totalb,
+    count(t1.id) FILTER (WHERE t1.call_duration > 3) AS acceptedb,
+    count(t1.id) FILTER (WHERE t1.call_duration = 0) AS missedb,
+    count(t1.id) FILTER (WHERE t1.call_duration > 0 AND t1.call_duration <= 3) AS droppedb,
+    COALESCE(sum(t1.call_duration) FILTER (WHERE t1.call_duration > 3), 0::bigint) AS callsumb,
+    count(DISTINCT t1.subscriber_b_id) AS personsdayb,
+    abs(count(t1.id) FILTER (WHERE length(t1.number_a::text) > 9) - count(DISTINCT ROW(t1.subscriber_b_id, t1.code_domen_a_id, t1.number_a)) FILTER (WHERE length(t1.number_a::text) > 9)) AS recallb,
+    count(t1.id) FILTER (WHERE length(t1.number_a::text) > 9) AS totalmorenineb
+   FROM atc_calls t1
+     JOIN fns_ad t2 ON t1.subscriber_b_id = t2.id
+     JOIN fns_deps t3 ON t2.department_id = t3.id
+     JOIN fns_depdirection t4 ON t3.depdirection_id = t4.id
+     JOIN fns_tno t5 ON t3.tno_id = t5.id
+     JOIN fns_ufns t6 ON t5.ufns_id = t6.id
+     JOIN fns_district t7 ON t6.district_id = t7.id
+  WHERE t1.call_type_id <> 2
+  GROUP BY (date((t1.time_fixation AT TIME ZONE 'Europe/Moscow'::text))), (
+        CASE
+            WHEN EXTRACT(hour FROM (t1.time_fixation AT TIME ZONE 'Europe/Moscow'::text)) >= 9::numeric AND EXTRACT(hour FROM (t1.time_fixation AT TIME ZONE 'Europe/Moscow'::text)) < 18::numeric THEN true
+            ELSE false
+        END), (
+        CASE
+            WHEN (lower(t1.outcaller_fullname::text) ~~ ANY (ARRAY['%екц%'::text, '%единый %'::text])) AND (lower(t1.outcaller_fullname::text) !~~ ANY (ARRAY['%инспекци%'::text])) THEN true
+            ELSE false
+        END), t1.call_type_id, t2.department_id, t3.depdirection_id, t3.tno_id, t5.ufns_id, t6.district_id;

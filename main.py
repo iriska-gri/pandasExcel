@@ -12,4 +12,4 @@ if __name__ == '__main__':
 
    # getattr(p)()
    # h.printer()
-   getattr(t,sys.argv[1])()
+   getattr(h,sys.argv[1])()

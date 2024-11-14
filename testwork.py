@@ -19,8 +19,24 @@ class WorkTest():
         print('проверка')
 
     def pro(self):
-        df = self.settingssheet()
-        self.connection.insertInto(df)
+        file = {
+            'opendoc': 'Тестовое задание для ТС',
+            # 'tablename': 'anketa1',
+            # 'sheet' : 7
+            'tablename': 'anketa2',
+            'sheet' : 8
+        }  
+        df = self.getexcelfile(file)
+        newreports =df.loc[3:]
+        self.connection.insertInto(newreports, file['tablename'])
+
+    def getexcelfile(self, val): 
+        test = self.client.open(val['opendoc'])
+        sheet_reports =test.get_worksheet(val['sheet'])
+        reports = pd.DataFrame(sheet_reports.get())
+        return reports
+
+    
 
     def settingssheet(self):
         file = {
@@ -93,4 +109,15 @@ class WorkTest():
 
         # 
    
-        
+    def inet(self):
+        data = pd.DataFrame({
+            'A': [1, 2, 3, 4],
+            'B': [10, 20, 30, 40]
+        })
+
+        # Использование chaining
+        result = (data
+                .assign(C=lambda x: x['A'] + x['B'])
+                .query('C > 20')
+                .reset_index(drop=True))
+        print(result)
