@@ -6,9 +6,10 @@ class ConnectGoogle():
         pass
 
     def connect(self):
-        scope = ['https://www.googleapis.com/auth/spreadsheets',
-        "https://www.googleapis.com/auth/drive"]
+        pass
+        # scope = ['https://www.googleapis.com/auth/spreadsheets',
+        # "https://www.googleapis.com/auth/drive"]
 
-        credentials = ServiceAccountCredentials.from_json_keyfile_name("gs_credentials.json", scope)
-        client = gspread.authorize(credentials)
-        return client
+        # credentials = ServiceAccountCredentials.from_json_keyfile_name("gs_credentials.json", scope)
+        # client = gspread.authorize(credentials)
+        # return client

@@ -11,6 +11,7 @@ from pandasimort import Connect
 
 class WorkTest():
     def __init__(self):
+        pass
         self.client = ConnectGoogle().connect()
         self.connection = Connect()
 
